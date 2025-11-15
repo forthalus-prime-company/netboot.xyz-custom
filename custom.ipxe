@@ -22,77 +22,36 @@ iseq ${os_arch} arm64   && set os_arch arm64
 menu ${os} - ${os_arch}
 item --gap Latest Releases
 item trixie   ${space} Debian 13.0 (trixie)
-item bookworm ${space} Debian 12.0 (bookworm)
-item --gap Testing Releases
-item forky    ${space} Debian forky (testing)
-item sid      ${space} Debian sid (unstable)
-item --gap Older Releases
-item older_release ${space} Set release codename manually...
 choose debian_version || goto debian_exit
-
-iseq ${debian_version} older_release && goto older_release
 
 goto mirrorcfg
 
-:older_release
-set older_release true
-set debian_mirror http://archive.debian.org
-echo Setting mirror to ${debian_mirror}
-clear debian_version
-echo -n Please enter release codename (e.g. stretch, jessie): ${}
-read debian_version
-set dir ${debian_base_dir}/dists/${debian_version}/main/installer-${os_arch}/current/images/netboot/
-goto deb_boot_type
-
 :mirrorcfg
-# If you want your own mirror, set it here:
 isset debian_mirror || set debian_mirror http://deb.debian.org/debian
 set mirrorcfg mirror/suite=${debian_version}
 set dir ${debian_base_dir}/dists/${debian_version}/main/installer-${os_arch}/current/images/netboot/
 goto deb_boot_type
 
 :deb_boot_type
-# Add custom kernel parameters for certain releases
-iseq ${debian_version} trixie && set custom_params "netcfg/enable=true netcfg/get_hostname?=unassigned netcfg/get_domain?=unassigned hw-detect/load_firmware=false hw-detect/firmware-lookup=never" || set custom_params ""
+set custom_params "netcfg/enable=true netcfg/get_hostname?=unassigned netcfg/get_domain?=unassigned hw-detect/load_firmware=false hw-detect/firmware-lookup=never"
 
 menu ${os} [${debian_version}] Installer
 item --gap Install types
 item text      ${space} Text Based Install
-item graphical ${space} Graphical Install
-item rescue    ${space} Rescue Mode
-item expert    ${space} Expert Install
 item preseed   ${space} Specify preseed URL...
 choose type || goto debian
 
 goto deb_${type}
 
-:deb_rescue
-set install_params rescue/enable=true
-goto deb_text
-
-:deb_expert
-set install_params priority=low
-goto deb_text
-
 :deb_preseed
 echo -n Specify preseed URL for ${os} ${debian_version}: ${}
 read preseedurl
-echo -n Enter custom kernel params (optional): ${}
-read user_params
-isset user_params || set user_params ${custom_params}
-set install_params auto=true priority=critical ${user_params} preseed/url=${preseedurl}
+set install_params auto=true priority=critical ${custom_params} preseed/url=${preseedurl}
 goto deb_text
-
 
 :deb_text
 set dir ${dir}${type}-installer/${os_arch}
 goto deb_boot
-
-:deb_graphical
-set dir ${dir}gtk/${type}-installer/${os_arch}
-set install_params vga=788
-goto deb_boot
-
 
 :deb_boot
 imgfree
