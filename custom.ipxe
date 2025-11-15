@@ -6,8 +6,10 @@
 goto ${menu}
 
 :debian
+set debian_version
+set older_release
 set os Debian
-set os_arch ${arch}
+set os_arch x86_64
 iseq ${os_arch} x86_64 && set os_arch amd64 ||
 iseq ${os_arch} i386 && set os_arch i386 ||
 iseq ${os_arch} arm64 && set os_arch arm64 ||
@@ -42,7 +44,7 @@ set dir ${debian_base_dir}/dists/${debian_version}/main/installer-${os_arch}/cur
 goto deb_boot_type
 
 :deb_boot_type
-iseq ${debian_version} trixie && set custom_params "netcfg/enable=true netcfg/get_hostname?=unassigned netcfg/get_domain?=unassigned hw-detect/load_firmware=false hw-detect/firmware-lookup=never" || set custom_params ""
+iseq ${debian_version} trixie && set custom_params netcfg/enable=true netcfg/get_hostname?=unassigned netcfg/get_domain?=unassigned hw-detect/load_firmware=false hw-detect/firmware-lookup=never || set custom_params ""
 menu ${os} [${debian_version}] Installer
 item --gap Install types
 item text ${space} Text Based Install
@@ -64,9 +66,9 @@ set install_params priority=low
 goto deb_text
 
 :deb_preseed
-echo -n "Specify preseed URL for ${os} ${debian_version}: "
+echo -n Specify preseed URL for ${os} ${debian_version}: ${}
 read preseedurl
-echo -n "Enter custom install/kernel params for ${os} ${debian_version} (optional): "
+echo -n Enter custom install/kernel params for ${os} ${debian_version} (optional): ${}
 read user_params
 isset user_params || set user_params ${custom_params}
 set install_params auto=true priority=critical ${user_params} preseed/url=${preseedurl}
