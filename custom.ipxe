@@ -1,65 +1,34 @@
 #!ipxe
+###
+### Simplified Debian Installer with Preseed URL
+###
 
-# Standalone Debian Network Boot Menu
-
-set menu debian
 set debian_base_dir debian
+set os Debian
+set os_arch amd64
 set space "  "
 
-goto ${menu}
-
-:debian
+:custom
 clear debian_version
-clear older_release
-set os Debian
-set os_arch x86_64
-
-# Normalize architecture for Debian installer
-iseq ${os_arch} x86_64 && set os_arch amd64
-iseq ${os_arch} i386    && set os_arch i386
-iseq ${os_arch} arm64   && set os_arch arm64
-
-menu ${os} - ${os_arch}
-item --gap Latest Releases
+menu Debian Network Installer
 item trixie   ${space} Debian 13.0 (trixie)
-choose debian_version || goto debian_exit
+choose debian_version || goto exit
 
-goto mirrorcfg
-
-:mirrorcfg
 isset debian_mirror || set debian_mirror http://deb.debian.org/debian
-set mirrorcfg mirror/suite=${debian_version}
 set dir ${debian_base_dir}/dists/${debian_version}/main/installer-${os_arch}/current/images/netboot/
-goto deb_boot_type
 
-:deb_boot_type
 set custom_params "netcfg/enable=true netcfg/get_hostname?=unassigned netcfg/get_domain?=unassigned hw-detect/load_firmware=false hw-detect/firmware-lookup=never"
 
-menu ${os} [${debian_version}] Installer
-item --gap Install types
-item text      ${space} Text Based Install
-item preseed   ${space} Specify preseed URL...
-choose type || goto debian
-
-goto deb_${type}
-
-:deb_preseed
-echo -n Specify preseed URL for ${os} ${debian_version}: ${}
+:preseed
+echo -n Enter preseed URL for ${os} ${debian_version}: ${}
 read preseedurl
+
 set install_params auto=true priority=critical ${custom_params} preseed/url=${preseedurl}
-goto deb_text
 
-:deb_text
-set dir ${dir}${type}-installer/${os_arch}
-goto deb_boot
-
-:deb_boot
 imgfree
-kernel ${debian_mirror}/${dir}/linux ${install_params} ${custom_params} ${mirrorcfg} initrd=initrd.gz ${cmdline}
+kernel ${debian_mirror}/${dir}/linux ${install_params} initrd=initrd.gz
 initrd ${debian_mirror}/${dir}/initrd.gz
 boot
 
-
-:debian_exit
-clear menu
-exit 0
+:exit
+exit
