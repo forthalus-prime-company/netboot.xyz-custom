@@ -18,6 +18,7 @@ clear menu
 menu Homelab PXE Boot - forthal.com
 item --gap -- Homelab Nodes:
 item naruto naruto.forthal.com (storage)
+item sasuke sasuke.forthal.com (all)
 item --gap --
 item shell Drop to iPXE shell
 item reboot Reboot
@@ -27,6 +28,30 @@ choose target && goto ${target} || goto start
 echo Booting naruto.forthal.com (storage)...
 set boot_hostname naruto
 set boot_role storage
+
+set install_params auto=true \
+  priority=critical \
+  netcfg/enable=true \
+  netcfg/get_hostname?=${boot_hostname} \
+  netcfg/get_domain?=forthal.com \
+  hw-detect/load_firmware=false \
+  hw-detect/firmware-lookup=never \
+  role=${boot_role} \
+  preseed/url=tftp://router.lan/preseed.cfg
+
+imgfree
+kernel ${debian_mirror}/${dir}/linux ${install_params} ${mirrorcfg} initrd=initrd.magic ${cmdline}
+initrd ${debian_mirror}/${dir}/initrd.gz
+echo
+echo MD5sums:
+md5sum linux initrd.gz
+
+boot || goto start
+
+:sasuke
+echo Booting sasuke.forthal.com (all)...
+set boot_hostname sasuke
+set boot_role all
 
 set install_params auto=true \
   priority=critical \
