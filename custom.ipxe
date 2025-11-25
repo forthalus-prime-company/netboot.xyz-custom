@@ -15,16 +15,16 @@ set dir ${debian_base_dir}/dists/${debian_version}/main/installer-${os_arch}/cur
 
 :start
 clear menu
-menu Homelab PXE Boot - homelab.local
+menu Homelab PXE Boot - forthal.com
 item --gap -- Homelab Nodes:
-item naruto naruto.homelab.local (storage)
+item naruto naruto.forthal.com (storage)
 item --gap --
 item shell Drop to iPXE shell
 item reboot Reboot
 choose target && goto ${target} || goto start
 
 :naruto
-echo Booting naruto.homelab.local (storage)...
+echo Booting naruto.forthal.com (storage)...
 set boot_hostname naruto
 set boot_role storage
 
@@ -32,7 +32,7 @@ set install_params auto=true \
   priority=critical \
   netcfg/enable=true \
   netcfg/get_hostname?=${boot_hostname} \
-  netcfg/get_domain?=homelab.local \
+  netcfg/get_domain?=forthal.com \
   hw-detect/load_firmware=false \
   hw-detect/firmware-lookup=never \
   role=${boot_role} \
